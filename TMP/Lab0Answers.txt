@@ -1,0 +1,52 @@
+Q1: Assuming the XINU text begins at address 0x0, draw a rough diagram of XINU's memory layout with addresses derived from your 
+experimental measurements. Include the information you uncovered from running your version of printsegaddress() and printprocstks().
+
+
+		|------------------------|0xffffffff
+		|           		 |
+		| 			 |
+		|------------------------|
+			    .
+			    .
+			    .
+		|------------------------| Stack base(Main) = 0x00ffeff8
+(Stack grows 	|      Stack base(Main)  | limit = 0x00ffdffc
+    downwards)	| 	                 | length =  4096
+		|			 | Stack pointer = 0x00ffeb0
+		|------------------------| 
+		|      Heap segment      |
+		| 0x00028d5c-0x00ffdff8  |
+		|	    .		 | 
+		|	    .		 | 
+		|	    .		 | 
+		|	    .		 | 
+		|------------------------|
+		|      BSS segment       |
+		| 0x00020601-0x00028D58  |
+		|------------------------|
+		|      data segment      |
+		| 0x000199bc-0x000205fd  |
+		|------------------------|
+		|      text segment      |
+		|    000 - 0x000199b8    |
+		--------------------------
+
+Q2:  What is the difference in stack top address before and after calling printtos()?
+ Draw a diagram to illustrate what are the contents of the items pushed into the stack between these two time points.
+
+ESP gets inremented by 3 positions (3*4 bytes) in my case because I am also making a "register int" type variable in sthe start of function. So the stacks looks like.
+
+		|-----------------------------------|+ 12 in ESP before call
+		|  local register int type variable |   
+		|-----------------------------------|+ 8 in ESP before call
+		|EBP (just after the return address)|
+		|-----------------------------------| + 4 in ESP before call
+		|     Return Address (4 bytes)	    |
+		-------------------------------------
+
+
+Q3: In a stack frame, local variables are stored below the top of the stack. In task 3, does your result show all the local variables declared in your printtos function?
+ If not, can you explain that? (hint: try to disable the compiler optimization by specifing -O0 in your Makefile)
+
+Esp was decremetned according to the number of locals but the data values under ESP were not equal to the values of local variables. But tuning off -O0 by replacing it
+with -O in the main file did the trick. -0O Optimization was probably relocating the memory content.
